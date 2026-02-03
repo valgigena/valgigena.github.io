@@ -1,292 +1,465 @@
-
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>WebPd boilerplate</title>
-        <style>
-            #start {
-                display: none;
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Links - valgigena</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Lucida Console', 'Monaco', monospace;
+        }
+
+        body {
+            background-color: #000000;
+            color: #33ff33;
+            height: 100vh;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .terminal-container {
+            max-width: 900px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #555;
+            background-color: #111;
+        }
+
+        .terminal-header {
+            background-color: #222;
+            padding: 8px;
+            border-bottom: 1px solid #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-title {
+            font-size: 1rem;
+            font-weight: normal;
+            color: #33ff33;
+        }
+
+        .terminal-body {
+            background-color: #000;
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .output {
+            margin-bottom: 6px;
+            line-height: 1.2;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .command-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .prompt {
+            color: #33ff33;
+            margin-right: 8px;
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        #command-input {
+            background-color: transparent;
+            border: none;
+            color: #33ff33;
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
+            caret-color: #33ff33;
+            flex-grow: 1;
+            margin-left: 5px;
+        }
+
+        .error {
+            color: #ff3333;
+        }
+
+        .success {
+            color: #33ff33;
+        }
+
+        .info {
+            color: #aaa;
+        }
+
+        .help-command {
+            margin-bottom: 6px;
+            display: flex;
+        }
+
+        .command-name {
+            color: #33ff33;
+            width: 130px;
+        }
+
+        .command-desc {
+            color: #ccc;
+        }
+
+        .terminal-footer {
+            margin-top: 10px;
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            padding: 8px;
+            border-top: 1px solid #333;
+        }
+
+        /* Estilo para las listas de enlaces */
+        .link-list {
+            margin: 10px 0;
+            padding-left: 15px;
+        }
+
+        .link-list li {
+            margin: 6px 0;
+            line-height: 1.3;
+        }
+
+        .command-example {
+            color: #33ff33;
+            font-weight: bold;
+        }
+
+        .separator {
+            border-top: 1px solid #333;
+            margin: 10px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
             }
-            #loading {
+            
+            .terminal-container {
+                max-width: 100%;
+            }
+            
+            .help-command {
+                flex-direction: column;
+            }
+            
+            .command-name {
                 width: 100%;
-                height: 100%;
-                position: fixed;
-                top: 50%;
-                transform: translateY(-50%);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>My Web Page</h1>
-        <div>For more info about usage (how to interact with the patch), you can open this HTML file in a code editor.</div>
-        <button id="start"> Start </button>
-        <div id="loading"> Loading ... </div>
-        <script src="webpd-runtime.js"></script>
-        <script>
-            // SUMMARY
-            // 1. WEB PAGE INITIALIZATION
-            // 2. SENDING MESSAGES FROM JAVASCRIPT TO THE PATCH
-            // 3. SENDING MESSAGES FROM THE PATCH TO JAVASCRIPT
-
-
-            // ------------- 1. WEB PAGE INITIALIZATION
-            const loadingDiv = document.querySelector('#loading')
-            const startButton = document.querySelector('#start')
-            const audioContext = new AudioContext()
-
-            let patch = null
-            let stream = null
-            let webpdNode = null
-
-            const initApp = async () => {
-                // Register the worklet
-                await WebPdRuntime.initialize(audioContext)
-
-                // Fetch the patch code
-                response = await fetch('patch.wasm')
-                patch = await response.arrayBuffer()
-
-                // Comment this if you don't need audio input
-                stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-
-                // Hide loading and show start button
-                loadingDiv.style.display = 'none'
-                startButton.style.display = 'block'
-            }
-
-            const startApp = async () => {
-                // AudioContext needs to be resumed on click to protects users 
-                // from being spammed with autoplay.
-                // See : https://github.com/WebAudio/web-audio-api/issues/345
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume()
-                }
-
-                // Setup web audio graph
-                webpdNode = await WebPdRuntime.run(
-                    audioContext, 
-                    patch, 
-                    WebPdRuntime.defaultSettingsForRun(
-                        './patch.wasm',
-                        // Comment this if you don't need to receive messages from the patch
-                        receiveMsgFromWebPd,
-                    ),
-                )
-                webpdNode.connect(audioContext.destination)
-
-                // Comment this if you don't need audio input
-                const sourceNode = audioContext.createMediaStreamSource(stream)
-                sourceNode.connect(webpdNode)
-
-                // Hide the start button
-                startButton.style.display = 'none'
-            }
-
-            startButton.onclick = startApp
-
-            initApp().
-                then(() => {
-                    console.log('App initialized')
-                })
-
-            
-            // ------------- 2. SENDING MESSAGES FROM JAVASCRIPT TO THE PATCH
-            // Use the function sendMsgToWebPd to send a message from JavaScript to an object inside your patch.
-            // 
-            // Parameters : 
-            // - nodeId: the ID of the object you want to send a message to. 
-            //          This ID is a string that has been assigned by WebPd at compilation.
-            //          You can find below the list of available IDs with hints to help you 
-            //          identify the object you want to interact with.
-            // - portletId : the ID of the object portlet to which the message should be sent. 
-            // - message : the message to send. This must be a list of strings and / or numbers.
-            // 
-            // Examples :
-            // - sending a message to a bang node of ID 'n_0_1' :
-            //          sendMsgToWebPd('n_0_1', '0', ['bang'])
-            // - sending a message to a number object of ID 'n_0_2' :
-            //          sendMsgToWebPd('n_0_2', '0', [123])
-            // 
-            const sendMsgToWebPd = (nodeId, portletId, message) => {
-                webpdNode.port.postMessage({
-                    type: 'io:messageReceiver',
-                    payload: {
-                        nodeId,
-                        portletId,
-                        message,
-                    },
-                })
+                margin-bottom: 5px;
             }
             
-            // Here is an index of objects IDs to which you can send messages, with hints so you can find the right ID.
-            // Note that by default only GUI objects (bangs, sliders, etc ...) are available.
-            //  - nodeId "n_0_0" portletId "0"
-            //      * type "tgl"
-            //      * position 273 105
-            
-            //  - nodeId "n_0_5" portletId "0"
-            //      * type "floatatom"
-            //      * position 273 269
-            
-            //  - nodeId "n_0_7" portletId "0"
-            //      * type "tgl"
-            //      * position 355 105
-            
-            //  - nodeId "n_0_11" portletId "0"
-            //      * type "hradio"
-            //      * position 206 304
-            
-            //  - nodeId "n_0_15" portletId "0"
-            //      * type "tgl"
-            //      * position 439 74
-            
-            //  - nodeId "n_0_16" portletId "0"
-            //      * type "floatatom"
-            //      * position 439 196
-            
-            //  - nodeId "n_0_17" portletId "0"
-            //      * type "floatatom"
-            //      * position 506 196
-            
-            //  - nodeId "n_0_18" portletId "0"
-            //      * type "msg"
-            //      * position 439 149
-            
-            //  - nodeId "n_0_19" portletId "0"
-            //      * type "msg"
-            //      * position 479 148
-            
-            //  - nodeId "n_0_25" portletId "0"
-            //      * type "tgl"
-            //      * position 227 82
-            
-            //  - nodeId "n_0_26" portletId "0"
-            //      * type "msg"
-            //      * position 645 98
-            
-            //  - nodeId "n_0_21" portletId "0"
-            //      * type "send"
-            //      * send "onw"
-            
-            //  - nodeId "n_0_22" portletId "0"
-            //      * type "send"
-            //      * send "tow"
-            
-
-            // ------------- 3. SENDING MESSAGES FROM THE PATCH TO JAVASCRIPT
-            // Use the function receiveMsgFromWebPd to receive a message from an object inside your patch.
-            // 
-            // Parameters : 
-            // - nodeId: the ID of the object that is sending a message. 
-            //          This ID is a string that has been assigned by WebPd at compilation.
-            //          You can find below the list of available IDs with hints to help you 
-            //          identify the object you want to interact with.
-            // - portletId : the ID of the object portlet that is sending the message.
-            // - message : the message that was sent. It is a list of strings and / or numbers.
-            const receiveMsgFromWebPd = (nodeId, portletId, message) => {
-                if (nodeId === "n_0_0" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_0" portletId "0"\n'
-                        + '	* type "tgl"\n'
-                        + '	* position 273 105\n'
-                    )
-                }
-                if (nodeId === "n_0_5" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_5" portletId "0"\n'
-                        + '	* type "floatatom"\n'
-                        + '	* position 273 269\n'
-                    )
-                }
-                if (nodeId === "n_0_7" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_7" portletId "0"\n'
-                        + '	* type "tgl"\n'
-                        + '	* position 355 105\n'
-                    )
-                }
-                if (nodeId === "n_0_11" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_11" portletId "0"\n'
-                        + '	* type "hradio"\n'
-                        + '	* position 206 304\n'
-                    )
-                }
-                if (nodeId === "n_0_15" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_15" portletId "0"\n'
-                        + '	* type "tgl"\n'
-                        + '	* position 439 74\n'
-                    )
-                }
-                if (nodeId === "n_0_16" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_16" portletId "0"\n'
-                        + '	* type "floatatom"\n'
-                        + '	* position 439 196\n'
-                    )
-                }
-                if (nodeId === "n_0_17" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_17" portletId "0"\n'
-                        + '	* type "floatatom"\n'
-                        + '	* position 506 196\n'
-                    )
-                }
-                if (nodeId === "n_0_18" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_18" portletId "0"\n'
-                        + '	* type "msg"\n'
-                        + '	* position 439 149\n'
-                    )
-                }
-                if (nodeId === "n_0_19" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_19" portletId "0"\n'
-                        + '	* type "msg"\n'
-                        + '	* position 479 148\n'
-                    )
-                }
-                if (nodeId === "n_0_25" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_25" portletId "0"\n'
-                        + '	* type "tgl"\n'
-                        + '	* position 227 82\n'
-                    )
-                }
-                if (nodeId === "n_0_26" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_26" portletId "0"\n'
-                        + '	* type "msg"\n'
-                        + '	* position 645 98\n'
-                    )
-                }
-                if (nodeId === "n_0_23" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_23" portletId "0"\n'
-                        + '	* type "receive"\n'
-                        + '	* receive "onw"'
-                    )
-                }
-                if (nodeId === "n_0_24" && portletId === "0") {
-                    console.log('Message received from :\n'
-                        + '	* nodeId "n_0_24" portletId "0"\n'
-                        + '	* type "receive"\n'
-                        + '	* receive "tow"'
-                    )
-                }                
+            .prompt {
+                font-size: 0.9rem;
             }
+            
+            .terminal-body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-title">links.valGigena</div>
+        </div>
+        
+        <div class="terminal-body" id="terminal-body">
+            <div class="output">
+                <div>╔════════════════════════════════════╗</div>
+                <div>║          LINKS - VALGIGENA         ║</div>
+                <div>╚════════════════════════════════════╝</div>
+                <br>
+                <div>Escribe <span class="command-example">ls</span> para ver los links disponibles.</div>
+            </div>
+            
+            <div id="output-container">
+                <!-- Aquí se mostrarán los resultados de los comandos -->
+            </div>
+            
+            <div class="command-line">
+                <div class="prompt">
+                    <span>user@val-links:~$</span>
+                </div>
+                <input type="text" id="command-input" autocomplete="off" spellcheck="false" autofocus>
+            </div>
+        </div>
+        
+        <div class="terminal-footer">
+            <div>Escribe help para ver los comandos disponibles. Escribe clear para limpiar la terminal.</div>
+        </div>
+    </div>
 
-        </script>
-    </body>
+    <script>
+        // Configuración inicial
+        const terminalBody = document.getElementById('terminal-body');
+        const commandInput = document.getElementById('command-input');
+        const outputContainer = document.getElementById('output-container');
+        
+        // Comandos disponibles
+        const commands = {
+            help: {
+                description: "Muestra todos los comandos disponibles",
+                execute: () => {
+                    showHelp();
+                }
+            },
+            clear: {
+                description: "Limpia la terminal",
+                execute: () => {
+                    outputContainer.innerHTML = '';
+                }
+            },
+            bandcamp: {
+                description: "Abre mi perfil de Bandcamp",
+                execute: () => {
+                    openLink("https://valgigena.bandcamp.com/", "Bandcamp");
+                }
+            },
+            portfolio: {
+                description: "Abre mi portfolio",
+                execute: () => {
+                    openLink("https://valgigena.wordpress.com/", "Portfolio");
+                }
+            },
+            youtube: {
+                description: "Abre mi canal de YouTube",
+                execute: () => {
+                    openLink("https://www.youtube.com/@valgigena", "YouTube");
+                }
+            },
+            github: {
+                description: "Abre mi perfil de GitHub",
+                execute: () => {
+                    openLink("https://github.com/valgigena", "GitHub");
+                }
+            },
+            instagram: {
+                description: "Abre mi perfil de Instagram",
+                execute: () => {
+                    openLink("https://www.instagram.com/valgigena__/", "Instagram");
+                }
+            },
+            ls: {
+                description: "Lista todos los enlaces disponibles",
+                execute: () => {
+                    listLinks();
+                }
+            },
+            date: {
+                description: "Muestra la fecha y hora actual",
+                execute: () => {
+                    showDate();
+                }
+            },
+            echo: {
+                description: "Repite el texto proporcionado",
+                execute: (args) => {
+                    if (args.length > 0) {
+                        addOutput(`<div class="output">${args.join(' ')}</div>`);
+                    } else {
+                        addOutput('<div class="error">Uso: echo [texto]</div>');
+                    }
+                }
+            },
+            about: {
+                description: "Muestra información sobre esta terminal",
+                execute: () => {
+                    showAbout();
+                }
+            }
+        };
+        
+        // Historial de comandos
+        let commandHistory = [];
+        let historyIndex = -1;
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            // Enfocar el input al cargar
+            commandInput.focus();
+            
+            // Mostrar mensaje de bienvenida después de un breve retraso
+            setTimeout(() => {
+                addOutput('<div class="output success">Terminal lista. Escribe "help" para comenzar.</div>');
+            }, 300);
+        });
+        
+        // Ejecutar comando al presionar Enter
+        commandInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                executeCommand();
+            } else if (e.key === 'ArrowUp') {
+                // Navegar hacia arriba en el historial
+                e.preventDefault();
+                navigateHistory('up');
+            } else if (e.key === 'ArrowDown') {
+                // Navegar hacia abajo en el historial
+                e.preventDefault();
+                navigateHistory('down');
+            }
+        });
+        
+        // Funciones principales
+        function executeCommand() {
+            const input = commandInput.value.trim();
+            if (!input) return;
+            
+            // Añadir comando al historial
+            commandHistory.push(input);
+            historyIndex = commandHistory.length;
+            
+            // Mostrar comando ejecutado
+            addOutput(`<div class="command-line">
+                <div class="prompt">
+                    <span>user@val-links:~$</span>
+                </div>
+                <div>${input}</div>
+            </div>`);
+            
+            // Procesar comando
+            const parts = input.split(' ');
+            const commandName = parts[0].toLowerCase();
+            const args = parts.slice(1);
+            
+            if (commands[commandName]) {
+                commands[commandName].execute(args);
+            } else {
+                addOutput(`<div class="error">Comando no encontrado: ${commandName}. Escribe 'help' para ver los comandos disponibles.</div>`);
+            }
+            
+            // Limpiar input y hacer scroll al final
+            commandInput.value = '';
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+        
+        function navigateHistory(direction) {
+            if (commandHistory.length === 0) return;
+            
+            if (direction === 'up') {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                }
+            } else if (direction === 'down') {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                } else {
+                    historyIndex = commandHistory.length;
+                    commandInput.value = '';
+                    return;
+                }
+            }
+            
+            if (historyIndex >= 0 && historyIndex < commandHistory.length) {
+                commandInput.value = commandHistory[historyIndex];
+            }
+        }
+        
+        function showHelp() {
+            let helpText = '<div class="output"><br>COMANDOS DISPONIBLES:<br><br>';
+            
+            for (const [cmd, info] of Object.entries(commands)) {
+                helpText += `<div class="help-command">
+                    <span class="command-name">${cmd}</span>
+                    <span class="command-desc">${info.description}</span>
+                </div>`;
+            }
+            
+            helpText += '<br><div class="info">Usa las flechas ↑ ↓ para navegar por el historial de comandos.</div>';
+            helpText += '</div>';
+            
+            addOutput(helpText);
+        }
+        
+        function openLink(url, name) {
+            addOutput(`<div class="output success">Abriendo ${name}: ${url}</div>`);
+            
+            // Abrir en una nueva pestaña después de un breve retraso
+            setTimeout(() => {
+                window.open(url, '_blank');
+            }, 300);
+        }
+        
+        function listLinks() {
+            let linksText = '<div class="output"><br>ENLACES DISPONIBLES:<br><br>';
+            
+            // Enlaces predefinidos
+            const predefinedLinks = [
+                {name: 'Bandcamp', url: 'https://valgigena.bandcamp.com/', command: 'bandcamp'},
+                {name: 'Portfolio', url: 'https://valgigena.wordpress.com/', command: 'portfolio'},
+                {name: 'YouTube', url: 'https://www.youtube.com/@valgigena', command: 'youtube'},
+                {name: 'GitHub', url: 'https://github.com/valgigena', command: 'github'},
+                {name: 'Instagram', url: 'https://www.instagram.com/valgigena__/', command: 'instagram'}
+            ];
+            
+            predefinedLinks.forEach(link => {
+                linksText += `<div class="help-command">
+                    <span class="command-name">${link.name}</span>
+                    <span class="command-desc">
+                        Comando: <span class="command-example">${link.command}</span> | 
+                        URL: ${link.url}
+                    </span>
+                </div>`;
+            });
+            
+            linksText += '</div>';
+            
+            addOutput(linksText);
+        }
+        
+        function showDate() {
+            const now = new Date();
+            addOutput(`<div class="output">${now.toLocaleString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            })}</div>`);
+        }
+        
+        function showAbout() {
+            let aboutText = '<div class="output"><br>SOBRE ESTA TERMINAL:<br><br>';
+            aboutText += '<div class="info">Terminal personal de valgigena</div>';
+            aboutText += '<div class="info">Versión 1.0 - Reemplazo de Linktree</div><br>';
+            aboutText += '<div>Esta terminal te permite acceder rápidamente a mis enlaces principales:</div><br>';
+            aboutText += '<ul class="link-list">';
+            aboutText += '<li><span class="command-example">bandcamp</span> - Mi música y proyectos musicales</li>';
+            aboutText += '<li><span class="command-example">portfolio</span> - Mis trabajos y proyectos creativos</li>';
+            aboutText += '<li><span class="command-example">youtube</span> - Mi canal con contenido audiovisual</li>';
+            aboutText += '<li><span class="command-example">github</span> - Mis proyectos de código y desarrollo</li>';
+            aboutText += '<li><span class="command-example">instagram</span> - Mi perfil en redes sociales</li>';
+            aboutText += '</ul><br>';
+            aboutText += '<div class="info">Escribe cualquier comando para navegar. ¡Disfruta!</div>';
+            aboutText += '</div>';
+            
+            addOutput(aboutText);
+        }
+        
+        function addOutput(html) {
+            outputContainer.innerHTML += html;
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+        
+        // Exponer funciones necesarias globalmente
+        window.executeCommand = executeCommand;
+        window.openLink = openLink;
+    </script>
+</body>
 </html>
