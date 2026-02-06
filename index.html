@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Links - valgigena</title>
     <style>
         * {
@@ -10,6 +10,8 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Lucida Console', 'Monaco', monospace;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
@@ -17,30 +19,34 @@
             color: #33ff33;
             height: 100vh;
             overflow: hidden;
-            padding: 10px;
+            padding: 0;
+            margin: 0;
+            touch-action: manipulation;
         }
 
         .terminal-container {
-            max-width: 900px;
-            margin: 0 auto;
-            height: 100%;
+            max-width: 100%;
+            margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            border: 2px solid #555;
+            border: none;
             background-color: #111;
+            overflow: hidden;
         }
 
         .terminal-header {
             background-color: #222;
-            padding: 8px;
+            padding: 12px 8px;
             border-bottom: 1px solid #555;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .terminal-title {
-            font-size: 1rem;
+            font-size: 16px;
             font-weight: normal;
             color: #33ff33;
         }
@@ -48,22 +54,32 @@
         .terminal-body {
             background-color: #000;
             flex-grow: 1;
-            padding: 15px;
+            padding: 15px 10px;
             overflow-y: auto;
-            height: 100%;
+            height: calc(100vh - 120px);
+            -webkit-overflow-scrolling: touch;
         }
 
         .output {
             margin-bottom: 6px;
-            line-height: 1.2;
+            line-height: 1.3;
             white-space: pre-wrap;
             word-break: break-word;
+            font-size: 14px;
         }
 
         .command-line {
             display: flex;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            padding: 8px 0;
+            background-color: rgba(51, 255, 51, 0.05);
+            border-radius: 4px;
+            position: sticky;
+            bottom: 0;
+            background-color: #000;
+            border-top: 1px solid #333;
+            margin-top: 10px;
         }
 
         .prompt {
@@ -73,18 +89,23 @@
             display: flex;
             align-items: center;
             white-space: nowrap;
+            flex-shrink: 0;
+            font-size: 14px;
         }
 
         #command-input {
             background-color: transparent;
             border: none;
             color: #33ff33;
-            font-size: 1rem;
+            font-size: 16px;
             width: 100%;
             outline: none;
             caret-color: #33ff33;
             flex-grow: 1;
             margin-left: 5px;
+            padding: 8px 0;
+            min-height: 44px;
+            font-size: 16px;
         }
 
         .error {
@@ -100,26 +121,31 @@
         }
 
         .help-command {
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
+            font-size: 14px;
         }
 
         .command-name {
             color: #33ff33;
-            width: 130px;
+            width: 140px;
+            flex-shrink: 0;
         }
 
         .command-desc {
             color: #ccc;
+            line-height: 1.3;
         }
 
         .terminal-footer {
-            margin-top: 10px;
+            margin-top: auto;
             text-align: center;
             color: #666;
-            font-size: 0.8rem;
-            padding: 8px;
+            font-size: 12px;
+            padding: 12px 8px;
             border-top: 1px solid #333;
+            flex-shrink: 0;
+            background-color: #111;
         }
 
         /* Estilo para las listas de enlaces */
@@ -129,8 +155,9 @@
         }
 
         .link-list li {
-            margin: 6px 0;
-            line-height: 1.3;
+            margin: 8px 0;
+            line-height: 1.4;
+            font-size: 14px;
         }
 
         .command-example {
@@ -140,35 +167,133 @@
 
         .separator {
             border-top: 1px solid #333;
-            margin: 10px 0;
+            margin: 15px 0;
         }
 
-        /* Responsive */
+        /* Botones táctiles para comandos comunes */
+        .quick-commands {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+            padding: 10px 0;
+        }
+
+        .quick-command-btn {
+            background-color: #222;
+            color: #33ff33;
+            border: 1px solid #555;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            flex-grow: 1;
+            min-width: 120px;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+
+        .quick-command-btn:active {
+            background-color: #333;
+        }
+
+        /* Ajustes específicos para móviles */
         @media (max-width: 768px) {
             body {
-                padding: 5px;
+                padding: 0;
+                overflow: hidden;
             }
             
             .terminal-container {
                 max-width: 100%;
+                height: 100vh;
+                border: none;
+            }
+            
+            .terminal-header {
+                padding: 15px 10px;
+            }
+            
+            .terminal-body {
+                padding: 15px;
+                height: calc(100vh - 140px);
             }
             
             .help-command {
                 flex-direction: column;
+                margin-bottom: 12px;
             }
             
             .command-name {
                 width: 100%;
-                margin-bottom: 5px;
+                margin-bottom: 4px;
+                font-weight: bold;
             }
             
             .prompt {
-                font-size: 0.9rem;
+                font-size: 13px;
+            }
+            
+            #command-input {
+                font-size: 16px;
+                min-height: 48px;
+            }
+            
+            .quick-command-btn {
+                min-width: calc(50% - 4px);
+                padding: 12px 8px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .terminal-title {
+                font-size: 14px;
             }
             
             .terminal-body {
-                padding: 10px;
+                padding: 12px;
             }
+            
+            .output {
+                font-size: 13px;
+            }
+            
+            .help-command {
+                font-size: 13px;
+            }
+            
+            .command-name {
+                width: 100%;
+            }
+            
+            .quick-command-btn {
+                min-width: 100%;
+                margin-bottom: 6px;
+            }
+            
+            .prompt {
+                font-size: 12px;
+            }
+            
+            #command-input {
+                font-size: 16px;
+            }
+        }
+
+        /* Evitar zoom en input en iOS */
+        input, textarea, select {
+            font-size: 16px;
+        }
+
+        /* Mejorar el scroll en móviles */
+        .terminal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background-color: #555;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -185,6 +310,18 @@
                 <div>╚════════════════════════════════════╝</div>
                 <br>
                 <div>Escribe <span class="command-example">ls</span> para ver los links disponibles.</div>
+                <br>
+                <div class="info">O usa estos comandos rápidos:</div>
+                
+                <div class="quick-commands">
+                    <div class="quick-command-btn" data-command="help">help</div>
+                    <div class="quick-command-btn" data-command="ls">ls</div>
+                    <div class="quick-command-btn" data-command="bandcamp">bandcamp</div>
+                    <div class="quick-command-btn" data-command="portfolio">portfolio</div>
+                    <div class="quick-command-btn" data-command="youtube">youtube</div>
+                    <div class="quick-command-btn" data-command="github">github</div>
+                    <div class="quick-command-btn" data-command="instagram">instagram</div>
+                </div>
             </div>
             
             <div id="output-container">
@@ -200,7 +337,7 @@
         </div>
         
         <div class="terminal-footer">
-            <div>Escribe help para ver los comandos disponibles. Escribe clear para limpiar la terminal.</div>
+            <div>Escribe help para ver los comandos. Escribe clear para limpiar.</div>
         </div>
     </div>
 
@@ -291,18 +428,62 @@
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
             // Enfocar el input al cargar
-            commandInput.focus();
+            setTimeout(() => {
+                commandInput.focus();
+                // En móviles, desplazar al input
+                if (isMobile()) {
+                    setTimeout(() => {
+                        commandInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            }, 100);
+            
+            // Configurar botones de comandos rápidos
+            document.querySelectorAll('.quick-command-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const command = this.getAttribute('data-command');
+                    commandInput.value = command;
+                    executeCommand();
+                });
+            });
+            
+            // Hacer que tocar en cualquier parte de la terminal enfoque el input
+            terminalBody.addEventListener('click', (e) => {
+                if (e.target !== commandInput && !e.target.classList.contains('quick-command-btn')) {
+                    commandInput.focus();
+                    // En móviles, desplazar al input cuando se toque la pantalla
+                    if (isMobile()) {
+                        setTimeout(() => {
+                            commandInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                    }
+                }
+            });
             
             // Mostrar mensaje de bienvenida después de un breve retraso
             setTimeout(() => {
                 addOutput('<div class="output success">Terminal lista. Escribe "help" para comenzar.</div>');
-            }, 300);
+            }, 500);
         });
+        
+        // Detectar si es dispositivo móvil
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
         
         // Ejecutar comando al presionar Enter
         commandInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 executeCommand();
+                // En móviles, ocultar teclado después de ejecutar comando
+                if (isMobile()) {
+                    setTimeout(() => {
+                        commandInput.blur();
+                        setTimeout(() => {
+                            commandInput.focus();
+                        }, 100);
+                    }, 300);
+                }
             } else if (e.key === 'ArrowUp') {
                 // Navegar hacia arriba en el historial
                 e.preventDefault();
@@ -324,7 +505,7 @@
             historyIndex = commandHistory.length;
             
             // Mostrar comando ejecutado
-            addOutput(`<div class="command-line">
+            addOutput(`<div class="command-line" style="border:none; margin-bottom:4px; padding:0;">
                 <div class="prompt">
                     <span>user@val-links:~$</span>
                 </div>
@@ -344,7 +525,16 @@
             
             // Limpiar input y hacer scroll al final
             commandInput.value = '';
-            terminalBody.scrollTop = terminalBody.scrollHeight;
+            
+            // En móviles, mantener el foco pero desplazar al final
+            if (isMobile()) {
+                setTimeout(() => {
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                    commandInput.focus();
+                }, 50);
+            } else {
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+            }
         }
         
         function navigateHistory(direction) {
@@ -380,6 +570,7 @@
             }
             
             helpText += '<br><div class="info">Usa las flechas ↑ ↓ para navegar por el historial de comandos.</div>';
+            helpText += '<div class="info">O usa los botones de comandos rápidos arriba.</div>';
             helpText += '</div>';
             
             addOutput(helpText);
@@ -388,10 +579,19 @@
         function openLink(url, name) {
             addOutput(`<div class="output success">Abriendo ${name}: ${url}</div>`);
             
-            // Abrir en una nueva pestaña después de un breve retraso
-            setTimeout(() => {
-                window.open(url, '_blank');
-            }, 300);
+            // En móviles, preguntar antes de abrir
+            if (isMobile()) {
+                setTimeout(() => {
+                    if (confirm(`¿Abrir ${name} en una nueva pestaña?`)) {
+                        window.open(url, '_blank');
+                    }
+                }, 100);
+            } else {
+                // Abrir en una nueva pestaña después de un breve retraso
+                setTimeout(() => {
+                    window.open(url, '_blank');
+                }, 300);
+            }
         }
         
         function listLinks() {
