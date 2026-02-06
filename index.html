@@ -170,33 +170,6 @@
             margin: 15px 0;
         }
 
-        /* Botones táctiles para comandos comunes */
-        .quick-commands {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 15px 0;
-            padding: 10px 0;
-        }
-
-        .quick-command-btn {
-            background-color: #222;
-            color: #33ff33;
-            border: 1px solid #555;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
-            flex-grow: 1;
-            min-width: 120px;
-            text-align: center;
-            transition: background-color 0.2s;
-        }
-
-        .quick-command-btn:active {
-            background-color: #333;
-        }
-
         /* Ajustes específicos para móviles */
         @media (max-width: 768px) {
             body {
@@ -216,7 +189,7 @@
             
             .terminal-body {
                 padding: 15px;
-                height: calc(100vh - 140px);
+                height: calc(100vh - 120px);
             }
             
             .help-command {
@@ -237,12 +210,6 @@
             #command-input {
                 font-size: 16px;
                 min-height: 48px;
-            }
-            
-            .quick-command-btn {
-                min-width: calc(50% - 4px);
-                padding: 12px 8px;
-                font-size: 13px;
             }
         }
 
@@ -265,11 +232,6 @@
             
             .command-name {
                 width: 100%;
-            }
-            
-            .quick-command-btn {
-                min-width: 100%;
-                margin-bottom: 6px;
             }
             
             .prompt {
@@ -310,18 +272,7 @@
                 <div>╚════════════════════════════════════╝</div>
                 <br>
                 <div>Escribe <span class="command-example">ls</span> para ver los links disponibles.</div>
-                <br>
-                <div class="info">O usa estos comandos rápidos:</div>
-                
-                <div class="quick-commands">
-                    <div class="quick-command-btn" data-command="help">help</div>
-                    <div class="quick-command-btn" data-command="ls">ls</div>
-                    <div class="quick-command-btn" data-command="bandcamp">bandcamp</div>
-                    <div class="quick-command-btn" data-command="portfolio">portfolio</div>
-                    <div class="quick-command-btn" data-command="youtube">youtube</div>
-                    <div class="quick-command-btn" data-command="github">github</div>
-                    <div class="quick-command-btn" data-command="instagram">instagram</div>
-                </div>
+                <div>Escribe <span class="command-example">help</span> para ver todos los comandos.</div>
             </div>
             
             <div id="output-container">
@@ -438,18 +389,9 @@
                 }
             }, 100);
             
-            // Configurar botones de comandos rápidos
-            document.querySelectorAll('.quick-command-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const command = this.getAttribute('data-command');
-                    commandInput.value = command;
-                    executeCommand();
-                });
-            });
-            
             // Hacer que tocar en cualquier parte de la terminal enfoque el input
             terminalBody.addEventListener('click', (e) => {
-                if (e.target !== commandInput && !e.target.classList.contains('quick-command-btn')) {
+                if (e.target !== commandInput) {
                     commandInput.focus();
                     // En móviles, desplazar al input cuando se toque la pantalla
                     if (isMobile()) {
@@ -570,7 +512,6 @@
             }
             
             helpText += '<br><div class="info">Usa las flechas ↑ ↓ para navegar por el historial de comandos.</div>';
-            helpText += '<div class="info">O usa los botones de comandos rápidos arriba.</div>';
             helpText += '</div>';
             
             addOutput(helpText);
